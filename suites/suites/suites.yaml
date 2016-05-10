@@ -193,7 +193,7 @@ templates:
     private: true
     username: opencm
     password: '{{opencm_git_pwd}}'
-    branch: '{{core_branch}}'
+    branch: 'fix-watchdog-test-m4'
 
   - &packager_external
     repo: cloudify-packager
