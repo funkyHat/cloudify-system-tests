@@ -186,12 +186,21 @@ def get_auth_header(username=None, password=None, token=None):
     return header
 
 
-def create_rest_client(manager_ip):
-    return CloudifyClient(
-        host=manager_ip,
-        headers=get_auth_header(
+def create_rest_client(manager_ip, secure=False, trust_all=False):
+    args = {
+        'host': manager_ip,
+        'headers': get_auth_header(
             username=os.environ.get(constants.CLOUDIFY_USERNAME_ENV),
-            password=os.environ.get(constants.CLOUDIFY_PASSWORD_ENV)))
+            password=os.environ.get(constants.CLOUDIFY_PASSWORD_ENV)),
+        }
+    if secure:
+        args.update({
+            'trust_all': trust_all,
+            'port': 443,
+            'protocol': 'https',
+            })
+
+    return CloudifyClient(**args)
 
 
 class YamlPatcher(object):

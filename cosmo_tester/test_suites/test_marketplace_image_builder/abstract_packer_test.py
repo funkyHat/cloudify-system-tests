@@ -22,6 +22,9 @@ import time
 
 from cosmo_tester.framework import git_helper as git
 
+from requests import ConnectionError
+from cloudify_rest_client.exceptions import CloudifyClientError
+from cosmo_tester.framework.util import create_rest_client
 from cloudify.workflows import local
 from cloudify_cli import constants as cli_constants
 import boto.ec2
@@ -43,6 +46,15 @@ SUPPORTED_ENVS = [
 
 
 class AbstractPackerTest(object):
+    def setUp(self):
+        self.conf = self.env.cloudify_config
+
+        self.aws_hello_world_test_config_inputs = {
+            'user_ssh_key': self.conf['aws_ssh_keypair_name'],
+            'agents_user': self.conf.get('aws_agents_user', 'ubuntu'),
+            'aws_access_key': self.conf['aws_access_key'],
+            'aws_secret_key': self.conf['aws_secret_key'],
+        }
 
     def _find_images(self):
         finders = {
@@ -370,7 +382,8 @@ class AbstractPackerTest(object):
                 'marketplace_cloudify_version',
                 'master'
             ),
-            "cloudify_manager_security_enabled": str(secure),
+            "cloudify_manager_security_enabled":
+                'true' if str(secure) else 'false',
         }
         inputs = json.dumps(self.build_inputs)
         with open(destination_path, 'w') as inputs_handle:
@@ -451,3 +464,168 @@ class AbstractPackerTest(object):
 
     def clean_temp_dir(self):
         shutil.rmtree(self.base_temp_dir)
+
+    def _delete_agents_keypair(self):
+        conn = self._get_conn_aws()
+        conn.delete_key_pair(key_name=self.aws_agents_keypair)
+
+    def _delete_agents_secgroup(self):
+        conn = self._get_conn_aws()
+        sgs = conn.get_all_security_groups()
+        candidate_sgs = [
+            sg for sg in sgs
+            if sg.name == self.aws_agents_secgroup and
+            # 'and' is on previous line due to PEP8
+            sg.vpc_id == self.env.cloudify_config['aws_vpc_id']
+        ]
+        if len(candidate_sgs) != 1:
+            raise RuntimeError('Could not clean up agents security group')
+        else:
+            sg_id = candidate_sgs[0].id
+            for sg in sgs:
+                for rule in sg.rules:
+                    groups = [grant.group_id for grant in rule.grants]
+                    if sg_id in groups:
+                        self._delete_sg_rule_reference(
+                            security_group=sg,
+                            proto=rule.ip_protocol,
+                            from_port=rule.from_port,
+                            to_port=rule.to_port,
+                            source_sg=candidate_sgs[0],
+                        )
+            candidate_sgs[0].delete()
+
+    def _delete_sg_rule_reference(self,
+                                  security_group,
+                                  from_port,
+                                  to_port,
+                                  source_sg,
+                                  proto='tcp'):
+        security_group.revoke(
+            ip_protocol=proto,
+            from_port=from_port,
+            to_port=to_port,
+            src_group=source_sg,
+        )
+
+    def get_public_ip(self, nodes_state):
+        return self.aws_manager_public_ip
+
+    @property
+    def expected_nodes_count(self):
+        return 4
+
+    @property
+    def host_expected_runtime_properties(self):
+        return []
+
+    @property
+    def entrypoint_node_name(self):
+        return 'host'
+
+    @property
+    def entrypoint_property_name(self):
+        return 'ip'
+
+    def _deploy_manager(self, secure=False, trust_all=False):
+        self.build_with_packer(only='aws', secure=secure)
+        self.deploy_image_aws()
+
+        self.client = create_rest_client(
+            self.aws_manager_public_ip,
+            secure=secure,
+            trust_all=trust_all,
+        )
+
+        response = {'status': None}
+        attempt = 0
+        max_attempts = 80
+        while response['status'] != 'running':
+            attempt += 1
+            if attempt >= max_attempts:
+                raise RuntimeError('Manager did not start in time')
+            else:
+                time.sleep(3)
+            try:
+                response = self.client.manager.get_status()
+            except CloudifyClientError:
+                # Manager not fully ready
+                pass
+            except ConnectionError:
+                # Timeout
+                pass
+
+        self.aws_agents_secgroup = self.conf.get(
+            'system-tests-security-group-name',
+            'marketplace-system-tests-security-group')
+        self.aws_agents_keypair = self.conf.get(
+            'system-tests-keypair-name',
+            'marketplace-system-tests-keypair')
+
+        self.aws_hello_world_test_config_inputs.update({
+            'agents_security_group_name': self.aws_agents_secgroup,
+            'agents_keypair_name': self.aws_agents_keypair,
+            })
+        if secure:
+            # Need to add the external IP address to the generated cert
+            self.aws_hello_world_test_config_inputs.update({
+                'manager_names_and_ips': self.aws_manager_public_ip,
+                })
+
+        # Arbitrary sleep to wait for manager to actually finish starting as
+        # otherwise we suffer timeouts in the next section
+        # TODO: This would be better if it actually had some way of checking
+        # the manager was fully up and we had a reasonable upper bound on how
+        # long we should expect to wait for that
+        time.sleep(90)
+
+        # We have to retry this a few times, as even after the manager is
+        # accessible we still see failures trying to create deployments
+        deployment_created = False
+        attempt = 0
+        max_attempts = 40
+        while not deployment_created:
+            attempt += 1
+            if attempt >= max_attempts:
+                raise RuntimeError('Manager not created in time')
+            else:
+                time.sleep(3)
+            try:
+                self.client.deployments.create(
+                    blueprint_id='CloudifySettings',
+                    deployment_id='config',
+                    inputs=self.aws_hello_world_test_config_inputs,
+                )
+                self.addCleanup(self._delete_agents_secgroup)
+                self.addCleanup(self._delete_agents_keypair)
+                deployment_created = True
+            except Exception as err:
+                if attempt >= max_attempts:
+                    raise err
+                else:
+                    self.logger.warn(
+                        'Saw error {}. Retrying.'.format(str(err))
+                    )
+
+        attempt = 0
+        max_attempts = 40
+        execution_started = False
+        while not execution_started:
+            attempt += 1
+            if attempt >= max_attempts:
+                raise RuntimeError('Manager did not start in time')
+            else:
+                time.sleep(3)
+            try:
+                self.client.executions.start(
+                    deployment_id='config',
+                    workflow_id='install',
+                )
+                execution_started = True
+            except Exception as err:
+                if attempt >= max_attempts:
+                    raise err
+                else:
+                    self.logger.warn(
+                        'Saw error {}. Retrying.'.format(str(err))
+                    )
