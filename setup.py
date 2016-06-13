@@ -9,7 +9,7 @@ setup(
         'schemas/*.yaml',
     ]},
     install_requires=[
-        'behave==1.2.5',
+        'pytest',
         'PyYAML==3.11',
     ],
 )

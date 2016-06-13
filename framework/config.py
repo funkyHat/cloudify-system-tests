@@ -1,3 +1,4 @@
+import logging
 import pkgutil
 
 import yaml
@@ -16,7 +17,12 @@ class Config(object):
     schema = {}
     raw_config = {}
 
-    def __init__(self, config_files, config_schema_files, logger):
+    def __init__(
+            self,
+            config_files=['cosmo_tests_config.yaml'],
+            config_schema_files=['framework/schemas/base_schema.yaml'],
+            logger=logging.getLogger(),
+            ):
         self.logger = logger
 
         # Load all initially supplied schemas
@@ -40,7 +46,7 @@ class Config(object):
         if isinstance(schema_file, dict):
             # This is already a dict, just use it
             schema = schema_file
-        else:        
+        else:
             with open(schema_file) as schema_handle:
                 schema = yaml.load(schema_handle.read())
 
@@ -113,9 +119,3 @@ class Config(object):
 
     def items(self):
         return self._generate_config().items()
-
-default_schemas = [
-    yaml.load(
-        pkgutil.get_data('cloudify_tester', 'schemas/base_schema.yaml')
-    )
-]
