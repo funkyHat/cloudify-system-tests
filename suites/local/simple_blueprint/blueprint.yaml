@@ -1,0 +1,57 @@
+tosca_definitions_version: cloudify_dsl_1_2
+
+
+description: >
+  This blueprint copies a file to the specified directory
+
+
+imports:
+  - http://www.getcloudify.org/spec/cloudify/3.1/types.yaml
+
+
+inputs:
+  target_path:
+    type: string
+
+  target_file_name:
+    type: string
+
+
+node_types:
+
+  local_simple_blueprint.File:
+    derived_from: cloudify.nodes.Root
+    properties:
+      source_path:
+        description: Where the file is now
+        type: string
+
+      target_path:
+        description: Where the file will be copied
+        type: string
+
+      target_file_name:
+        description: What should the file be called?
+        default: false
+
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create: scripts/create.py
+
+
+node_templates:
+
+  host:
+    type: cloudify.nodes.Compute
+    properties:
+      install_agent: false
+
+  file:
+    type: local_simple_blueprint.File
+    properties:
+      source_path: "source_file.txt"
+      target_path: { get_input: target_path }
+      target_file_name: { get_input: target_file_name }
+    relationships:
+      - type: cloudify.relationships.contained_in
+        target: host
