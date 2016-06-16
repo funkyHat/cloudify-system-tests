@@ -1,4 +1,5 @@
 import logging
+import os
 
 import yaml
 
@@ -19,7 +20,9 @@ class Config(object):
     def __init__(
             self,
             config_files=['cosmo_tests_config.yaml'],
-            config_schema_files=['framework/schemas/base_schema.yaml'],
+            config_schema_files=[os.path.join(
+                os.path.dirname(__file__),
+                'schemas/base_schema.yaml')],
             logger=logging.getLogger(),
             ):
         self.logger = logger
