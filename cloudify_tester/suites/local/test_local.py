@@ -34,6 +34,7 @@ def test_init_simple_blueprint(tmpdir):
 
 
 def test_init_broken_blueprint(tmpdir):
+    """This test will fail because the yaml file doesn't declare a version"""
     with tmpdir.as_cwd(), pytest.raises(DSLParsingLogicException) as e:
         local.init(
             blueprint_path=os.path.join(
