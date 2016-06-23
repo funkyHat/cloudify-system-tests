@@ -33,6 +33,27 @@ def test_init_simple_blueprint(tmpdir):
             assert 'This file contains some text. Wow!\n' == f.read()
 
 
+def test_init_simple_blueprint_cfyhelper(cfyhelper):
+    """
+    Same test but using a CfyHelper
+    """
+    inputs_file = os.path.join(cfyhelper.workdir, 'inputs.yaml')
+    with open(inputs_file, 'w') as f:
+        f.write(yaml.dump({
+            'target_path': './a folder/',
+            'target_file_name': 'file',
+            }))
+    cfyhelper.local.init(
+        blueprint_path=os.path.join(
+            os.path.dirname(__file__), 'simple_blueprint/blueprint.yaml'),
+        inputs_path=inputs_file,
+        )
+    cfyhelper.local.execute('install')
+
+    with open(os.path.join(cfyhelper.workdir, 'a folder/file')) as f:
+        assert 'This file contains some text. Wow!\n' == f.read()
+
+
 def test_init_broken_blueprint(tmpdir):
     """This test will fail because the yaml file doesn't declare a version"""
     with tmpdir.as_cwd(), pytest.raises(DSLParsingLogicException) as e:

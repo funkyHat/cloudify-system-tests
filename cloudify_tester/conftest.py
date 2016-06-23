@@ -17,7 +17,10 @@ import _pytest
 # while building the test environment. Note that the `config` fixture from
 # `framework/config.py` is available and used by the `manager` fixture below as
 # well as directly in some of the tests.
-pytest_plugins = 'cloudify_tester.framework.config'
+pytest_plugins = (
+    'cloudify_tester.framework.config',
+    'cloudify_tester.framework.cfy',
+    )
 
 
 @pytest.fixture(scope="session")
