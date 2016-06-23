@@ -1,0 +1,49 @@
+"""
+One interesting thing to note is that we're using the `tmpdir` fixture in a few
+of the step implementations here, and it always returns the same path. That's
+because fixtures are scoped by test by default, so the first time we use tmpdir
+it's cached and then reused.
+"""
+import os
+
+from pytest_bdd import scenarios, given, when, then
+from pytest_bdd.parsers import parse
+
+
+scenarios('features')
+
+
+@given(parse("I have a local blueprint at {path}"))
+def blueprint_path(path):
+    return os.path.join(os.getcwd(), path)
+
+
+@given(parse('I create inputs file {filename} with inputs\n"""\n{text}\n"""'))
+def inputs_file(filename, text, tmpdir):
+    file_path = os.path.join(str(tmpdir), filename)
+    with open(file_path, 'w') as f:
+        f.write(text)
+    return file_path
+
+
+@when("I init a local env using the blueprint")
+def init_env(blueprint_path, inputs_file, cfyhelper):
+    cfyhelper.local.init(blueprint_path, inputs_file)
+
+
+@when(parse("I execute the local {name:w} workflow"))
+def execute_workflow(name, cfyhelper):
+    cfyhelper.local.execute(workflow=name)
+
+
+@then(parse("I see the file {file} exists"))
+def check_file_exists(tmpdir, file):
+    with tmpdir.as_cwd():
+        assert os.path.isfile(file)
+    return file
+
+
+@then(parse("The file {file} contains the text '{text}'"))
+def check_contents(file, text, tmpdir):
+    with tmpdir.as_cwd(), open(file) as f:
+        assert text in f.read()
