@@ -1,3 +1,4 @@
+# pytest Proof of Concept
 This Proof of Concept demonstrates several of the features of pytest, as well as the `config` framework component which geokala developed, implemented as a pytest fixture.
 
 To run the tests install the package:
@@ -19,6 +20,7 @@ Failing tests can be found in `cloudify_tester/suites/test_tests/failing_tests.p
 py.test cloudify_tester/suites/test_tests/failing_tests.py
 ```
 
+## Debugging
 pytest has several features to aid in debugging failing tests. My favourite is the `--pdb` option:
 
 ```bash
