@@ -38,11 +38,12 @@ def test_init_simple_blueprint_cfyhelper(cfyhelper):
     Same test but using a CfyHelper
     """
     inputs_file = os.path.join(cfyhelper.workdir, 'inputs.yaml')
-    with open(inputs_file, 'w') as f:
-        f.write(yaml.dump({
+    cfyhelper.create_inputs({
             'target_path': './a folder/',
             'target_file_name': 'file',
-            }))
+        },
+        inputs_file)
+
     cfyhelper.local.init(
         blueprint_path=os.path.join(
             os.path.dirname(__file__), 'simple_blueprint/blueprint.yaml'),
