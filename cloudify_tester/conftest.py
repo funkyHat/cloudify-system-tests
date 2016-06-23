@@ -2,7 +2,8 @@
 import pytest
 import _pytest
 
-import framework.config
+
+pytest_plugins = 'cloudify_tester.framework.config'
 
 
 @pytest.fixture(scope="session")
@@ -16,11 +17,6 @@ def get_all_the_tests(request):
         if cls not in seen:
             seen.add(cls)
     return seen
-
-
-@pytest.fixture
-def config():
-    return framework.config.Config()
 
 
 class FakeManager(object):

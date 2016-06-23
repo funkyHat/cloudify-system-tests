@@ -1,6 +1,7 @@
 import logging
 import os
 
+import pytest
 import yaml
 
 
@@ -19,7 +20,7 @@ class Config(object):
 
     def __init__(
             self,
-            config_files=['cosmo_tests_config.yaml'],
+            config_files=['test_config.yaml'],
             config_schema_files=[os.path.join(
                 os.path.dirname(__file__),
                 'schemas/base_schema.yaml')],
@@ -121,3 +122,8 @@ class Config(object):
 
     def items(self):
         return self._generate_config().items()
+
+
+@pytest.fixture
+def config():
+    return Config()
