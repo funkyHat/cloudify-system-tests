@@ -1,8 +1,22 @@
+"""
+This demonstrates how to create pytest "fixtures".
 
+`conftest.py` is a special file which pytest will always load when setting up a
+test run. Any fixtures defined or declared as imports will then be available to
+the tests.
+
+tests can use fixtures by declaring an argument with the name of the fixture
+(see `cloudify_tester/suites/local/test_tests.py` for an example using the
+`get_all_the_tests` fixture below).
+"""
 import pytest
 import _pytest
 
 
+# pytest_plugins accepts a plugin or sequence of plugins that will be loaded
+# while building the test environment. Note that the `config` fixture from
+# `framework/config.py` is available and used by the `manager` fixture below as
+# well as directly in some of the tests.
 pytest_plugins = 'cloudify_tester.framework.config'
 
 
