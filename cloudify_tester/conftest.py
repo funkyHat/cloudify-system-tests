@@ -48,7 +48,7 @@ manager_obj = FakeManager()
 
 
 @pytest.fixture
-def manager(request, config):
+def fake_manager(request, config):
     """Set up an instance so we can use a manager in tests which use this
     fixture.
 
