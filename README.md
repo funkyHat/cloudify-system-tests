@@ -69,3 +69,6 @@ False
 
 ========================================= 1 failed in 8.82 seconds =========================================
 ```
+
+## External Suites
+The `external_example` dir demonstrates that the `cloudify_tester` package can be referenced externally (e.g. from test suites which live in their respective components' repos in git).
