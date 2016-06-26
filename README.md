@@ -44,6 +44,25 @@ cloudify_tester/suites/test_tests/failing_tests.py:12: AssertionError
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> entering PDB >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 > /Users/matt/Projects/cloudify/cloudify-tests-poc/cloudify_tester/suites/test_tests/failing_tests.py(12)test_fail()
 -> assert value is True
+(Pdb) ?
+
+Documented commands (type help <topic>):
+========================================
+EOF    bt         cont      enable  jump  pp       run      unt
+a      c          continue  exit    l     q        s        until
+alias  cl         d         h       list  quit     step     up
+args   clear      debug     help    n     r        tbreak   w
+b      commands   disable   ignore  next  restart  u        whatis
+break  condition  down      j       p     return   unalias  where
+
+Miscellaneous help topics:
+==========================
+exec  pdb
+
+Undocumented commands:
+======================
+retval  rv
+
 (Pdb) p value
 False
 (Pdb) c
