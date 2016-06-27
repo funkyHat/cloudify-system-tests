@@ -73,3 +73,8 @@ False
 
 ## External Suites
 The `external_example` dir demonstrates that the `cloudify_tester` package can be referenced externally (e.g. from test suites which live in their respective components' repos in git).
+
+## BDD
+The `bdd_example` dir demonstrates the `pytest-bdd` package in action (http://pytest-bdd.readthedocs.io/en/latest/)
+
+While BDD allows a much more declarative style of test, which would suit a lot of cloudify's system tests, I think that some tests are clearer written as plain functions, and pytest-bdd would allow us to re-use the same plugins & fixtures across all of the tests.

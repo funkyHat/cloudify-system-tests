@@ -1,7 +1,7 @@
 Feature: Local blueprint
 
     Scenario: Deploy a local blueprint
-        Given I have a local blueprint at cloudify_tester/suites/local/simple_blueprint/blueprint.yaml
+        Given I have a local blueprint at ../cloudify_tester/suites/local/simple_blueprint/blueprint.yaml
         And I create inputs file test.yaml with inputs
             """
             target_path: path/ilikecake

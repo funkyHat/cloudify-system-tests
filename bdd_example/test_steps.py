@@ -15,7 +15,12 @@ scenarios('features')
 
 @given(parse("I have a local blueprint at {path}"))
 def blueprint_path(path):
-    return os.path.join(os.getcwd(), path)
+    """
+    Steps are actually pytest fixtures, this means their return values are
+    cached and can be used by subsequent steps using the normal pytest fixture
+    syntax.
+    """
+    return os.path.join(os.path.dirname(__file__), path)
 
 
 @given(parse('I create inputs file {filename} with inputs\n"""\n{text}\n"""'))
