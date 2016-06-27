@@ -62,3 +62,26 @@ def check_file_exists(tmpdir, file):
 def check_contents(file, text, tmpdir):
     with tmpdir.as_cwd(), open(file) as f:
         assert text in f.read()
+
+
+@given(parse("I have a manager"))
+def deployed_manager(session_manager):
+    return session_manager
+
+
+@given(parse("I deploy a '{blueprint}' blueprint with the ID '{id}'"))
+def deploy_blueprint(
+        request, blueprint, id, config, deployed_manager, clone_git_repo):
+    deployed_manager.blueprints.upload(
+        os.path.join(
+            clone_git_repo,
+            config['platform_options']['nodecellar_blueprint']),
+        'nodecellar')
+    deployed_manager.create_inputs({})
+    deployed_manager.deployments.create('nodecellar', id)
+
+    def remove():
+        deployed_manager.deployments.delete(id)
+        deployed_manager.blueprints.delete('nodecellar')
+
+    request.addfinalizer(remove)

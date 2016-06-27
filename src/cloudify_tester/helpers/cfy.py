@@ -118,8 +118,38 @@ class _CfyExecutionsHelper(CfyHelperBase):
         self._exec(command)
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def cfyhelper(tmpdir):
-    yield CfyHelper(str(tmpdir))
-    # This allows the context manager to clean up after the fixture is
-    # released
+    return CfyHelper(str(tmpdir))
+
+
+@pytest.fixture(scope='session')
+def persistentcfyhelper(tmpdir_factory):
+    # Because this is a session-scoped fixture we can't use the regular
+    # `tmpdir` fixture as that's function-scoped.
+    return CfyHelper(str(tmpdir_factory.mktemp('cfyhelper')))
+
+
+@pytest.yield_fixture(scope='session')
+def session_manager(config, persistentgithelper, persistentcfyhelper):
+    persistentgithelper.clone(
+        "https://github.com/cloudify-cosmo/cloudify-manager-blueprints.git")
+    persistentgithelper.checkout(
+        'cloudify-manager-blueprints', config['cloudify_version'])
+    inputs = {
+        'instance_type': 'm3.large',
+        }
+    inputs.update(config['platform_options']['manager_blueprint_inputs'])
+    persistentcfyhelper.create_inputs(inputs)
+    persistentcfyhelper.init()
+    persistentcfyhelper.bootstrap(
+        os.path.join(
+            persistentgithelper.workdir,
+            'cloudify-manager-blueprints',
+            config['platform_options']['manager_blueprint']),
+        'inputs.yaml',
+        install_plugins=True)
+
+    yield persistentcfyhelper
+
+    persistentcfyhelper.teardown()

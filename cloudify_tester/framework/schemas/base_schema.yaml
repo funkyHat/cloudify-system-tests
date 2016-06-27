@@ -1,4 +1,17 @@
 real:
   description: I like cake.
+
 broken:
   description: Not broken now. Change name of this key to break.
+
+cloudify_version:
+  description: The version of cloudify that should be used
+  default: master
+
+platform:
+  description: Which platform to run the tests on
+  default: false
+
+platform_options:
+  description: dictionary of options that the platform uses
+  default: false

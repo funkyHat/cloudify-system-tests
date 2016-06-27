@@ -124,6 +124,6 @@ class Config(object):
         return self._generate_config().items()
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def config():
     return Config()
