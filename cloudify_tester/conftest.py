@@ -23,6 +23,9 @@ pytest_plugins = (
     )
 
 
+# fixtures can declare a "scope" (the default scope is per-test), which
+# describes how long they will be cached:
+# https://pytest.org/latest/fixture.html#sharing-a-fixture-across-tests-in-a-module-or-class-session
 @pytest.fixture(scope="session")
 def get_all_the_tests(request):
     """shamelessly stolen from the pytest examples.

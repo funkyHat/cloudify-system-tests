@@ -13,6 +13,9 @@ And then run the test suite:
 py.test
 ```
 
+The main test suites and framework are in the `cloudify_tester` dir.
+
+Test framework components are pytest plugins, and can be loaded in the standard way by external test suites (see below)
 
 Failing tests can be found in `cloudify_tester/suites/test_tests/failing_tests.py`. To run those:
 
@@ -78,3 +81,7 @@ The `external_example` dir demonstrates that the `cloudify_tester` package can b
 The `bdd_example` dir demonstrates the `pytest-bdd` package in action (http://pytest-bdd.readthedocs.io/en/latest/)
 
 While BDD allows a much more declarative style of test, which would suit a lot of cloudify's system tests, I think that some tests are clearer written as plain functions, and pytest-bdd would allow us to re-use the same plugins & fixtures across all of the tests.
+
+---
+
+Note that if you just run `py.test` in the root of the repo it will run all of the tests, including those in the "external" suites.

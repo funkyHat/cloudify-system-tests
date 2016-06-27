@@ -10,6 +10,9 @@ from pytest_bdd import scenarios, given, when, then
 from pytest_bdd.parsers import parse
 
 
+# The scenarios function tells pytest-bdd how to find feature files. It's alos
+# possible to describe features explicitly as test cases using the @scenario
+# decorator, but I didn't need to customise so this is fine.
 scenarios('features')
 
 
@@ -33,6 +36,13 @@ def inputs_file(filename, text, tmpdir):
 
 @when("I init a local env using the blueprint")
 def init_env(blueprint_path, inputs_file, cfyhelper):
+    """
+    Note here `blueprint_path` (from the first step) is pulled in as a
+    fixture.
+    Also note that the `cfyhelper` fixture which we use in some of the non-bdd
+    test cases is used here in exactly the same way (it's loaded by
+    conftest.py).
+    """
     cfyhelper.local.init(blueprint_path, inputs_file)
 
 
