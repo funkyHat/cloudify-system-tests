@@ -1,22 +1,22 @@
 import os
-from subprocess import check_output
-
 import pytest
 
 
 class GitHelper(object):
-    def __init__(self, workdir):
+    def __init__(self, workdir, executor):
         self.workdir = workdir
+        self._executor = executor
 
-    def _exec(self, command, repo_path):
+    def _exec(self, command, repo_path, fake_run=False):
         prepared_command = ['git']
         prepared_command.extend(command)
 
         repo_path = os.path.join(self.workdir, repo_path)
 
-        return check_output(prepared_command, cwd=repo_path)
+        return self._executor(prepared_command, cwd=repo_path,
+                              fake=fake_run)
 
-    def clone(self, repository, clone_to=None):
+    def clone(self, repository, clone_to=None, fake_run=False):
         if not clone_to:
             # Clone to the repo name if no clone_to is provided
             clone_to = os.path.split(repository)[-1].rstrip('.git')
@@ -27,7 +27,8 @@ class GitHelper(object):
             os.mkdir(path)
 
         # We clone to 'current dir' in the repo path to simplify self._exec
-        return self._exec(['clone', repository, '.'], repo_path=clone_to)
+        return self._exec(['clone', repository, '.'], repo_path=clone_to,
+                          fake_run=fake_run)
 
     def checkout(self, repo_path, checkout):
         return self._exec(['checkout', checkout], repo_path=repo_path)
@@ -59,3 +60,6 @@ else:
     def check_out_branch(githelper, clone_git_repo, branch):
         githelper.checkout(clone_git_repo, branch)
         return os.path.join(clone_git_repo)
+    def checkout(self, repo_path, checkout, fake_run=False):
+        return self._exec(['checkout', checkout], repo_path=repo_path,
+                          fake_run=fake_run)
