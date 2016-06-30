@@ -141,7 +141,7 @@ class _CfyDeploymentsHelper(CfyHelperBase):
             '--deployment-id', deployment_id,
             ]
         output = self._exec(command, fake_run=fake_run)
-        return yaml.load('\n'.join(output['stdout'].splitlines()[1:]))
+        return yaml.load('\n'.join(output['stdout'][1:]))
 
 
 class _CfyExecutionsHelper(CfyHelperBase):
