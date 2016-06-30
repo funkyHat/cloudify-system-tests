@@ -5,7 +5,9 @@ because fixtures are scoped by test by default, so the first time we use tmpdir
 it's cached and then reused.
 """
 import os
+import urllib2
 
+import py
 from pytest_bdd import scenarios, given, when, then
 from pytest_bdd.parsers import parse
 
@@ -26,7 +28,8 @@ def blueprint_path(path):
     return os.path.join(os.path.dirname(__file__), path)
 
 
-@given(parse('I create inputs file {filename} with inputs\n"""\n{text}\n"""'))
+@given(parse("I create inputs file '{filename}' with inputs"
+             '\n"""\n{text}\n"""'))
 def inputs_file(filename, text, tmpdir):
     file_path = os.path.join(str(tmpdir), filename)
     with open(file_path, 'w') as f:
@@ -52,15 +55,15 @@ def execute_workflow(name, cfyhelper):
 
 
 @then(parse("I see the file {file} exists"))
-def check_file_exists(tmpdir, file):
-    with tmpdir.as_cwd():
+def check_file_exists(cfyhelper, file):
+    with py.path.local(cfyhelper.workdir).as_cwd():
         assert os.path.isfile(file)
     return file
 
 
 @then(parse("The file {file} contains the text '{text}'"))
-def check_contents(file, text, tmpdir):
-    with tmpdir.as_cwd(), open(file) as f:
+def check_contents(file, text, executor):
+    with py.path.local(executor.workdir).as_cwd(), open(file) as f:
         assert text in f.read()
 
 
@@ -69,19 +72,71 @@ def deployed_manager(session_manager):
     return session_manager
 
 
-@given(parse("I deploy a '{blueprint}' blueprint with the ID '{id}'"))
-def deploy_blueprint(
-        request, blueprint, id, config, deployed_manager, clone_git_repo):
-    deployed_manager.blueprints.upload(
+@given("I upload the nodecellar blueprint")
+def upload_blueprint(
+        request, session_manager, clone_git_repo, config):
+    session_manager.blueprints.upload(
         os.path.join(
             clone_git_repo,
             config['platform_options']['nodecellar_blueprint']),
         'nodecellar')
-    deployed_manager.create_inputs({})
-    deployed_manager.deployments.create('nodecellar', id)
 
     def remove():
-        deployed_manager.deployments.delete(id)
-        deployed_manager.blueprints.delete('nodecellar')
-
+        session_manager.blueprints.delete('nodecellar')
     request.addfinalizer(remove)
+
+
+@given(parse("I create a '{blueprint}' deployment with the ID '{id}'"))
+def deploy_blueprint(
+        request, config, deployed_manager, clone_git_repo,
+        blueprint, id, inputs_file,
+        ):
+    deployed_manager.deployments.create('nodecellar', id, inputs_file)
+
+    def remove():
+        deployed_manager.executions.start(id, 'uninstall')
+        deployed_manager.deployments.delete(id)
+    request.addfinalizer(remove)
+
+    return deployed_manager, id
+
+
+@given(parse("I run the '{workflow}' workflow"))
+def run_workflow(deploy_blueprint, workflow):
+    manager, deployment_id = deploy_blueprint
+    manager.executions.start(deployment_id, workflow)
+
+
+@when("I look up the monitoring data for the deployment")
+def get_monitoring_data(deploy_blueprint):
+    manager, deployment_id = deploy_blueprint
+
+
+@when('I retrieve the host and port from the deployment')
+def deployment_host_port(deploy_blueprint):
+    manager, deployment_id = deploy_blueprint
+    outputs = manager.deployments.outputs(deployment_id)
+
+    values = outputs[0]['endpoint']['Value']
+    return values['ip_address'], values['port']
+
+
+@when('I visit the nodecellar URL')
+def i_visit_the_nodecellar_url(deployment_host_port):
+    """I visit the nodecellar URL."""
+    page = urllib2.openurl('http://{}:{}/'.format(*deployment_host_port))
+
+    assert 'nodecellar' in page.read()
+
+
+@then("I see the nodecellar front page")
+def check_front_page(deploy_blueprint):
+    manager, deployment_id = deploy_blueprint
+    raise NotImplementedError()
+
+
+@then('monitoring data is present')
+def monitoring_data_is_present(deploy_blueprint):
+    """monitoring data is present."""
+    manager, deployment_id = deploy_blueprint
+    raise NotImplementedError()

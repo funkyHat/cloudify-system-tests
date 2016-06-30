@@ -57,5 +57,5 @@ else:
 
     @given(parse("I check out the branch '{branch}'"))
     def check_out_branch(githelper, clone_git_repo, branch):
-        githelper.checkout(clone_git_repo.workdir, branch)
-        return os.path.join(githelper.workdir, dir)
+        githelper.checkout(clone_git_repo, branch)
+        return os.path.join(clone_git_repo)
