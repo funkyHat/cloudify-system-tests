@@ -2,6 +2,9 @@ import os
 import pytest
 
 
+pytest_plugins = ['cloudify_tester.framework.executor']
+
+
 class GitHelper(object):
     def __init__(self, workdir, executor):
         self.workdir = workdir
@@ -13,7 +16,7 @@ class GitHelper(object):
 
         repo_path = os.path.join(self.workdir, repo_path)
 
-        return self._executor(prepared_command, cwd=repo_path,
+        return self._executor(self.workdir, prepared_command, cwd=repo_path,
                               fake=fake_run)
 
     def clone(self, repository, clone_to=None, fake_run=False):
@@ -30,18 +33,19 @@ class GitHelper(object):
         return self._exec(['clone', repository, '.'], repo_path=clone_to,
                           fake_run=fake_run)
 
-    def checkout(self, repo_path, checkout):
-        return self._exec(['checkout', checkout], repo_path=repo_path)
+    def checkout(self, repo_path, checkout, fake_run=False):
+        return self._exec(['checkout', checkout], repo_path=repo_path,
+                          fake_run=fake_run)
 
 
 @pytest.fixture
-def githelper(tmpdir):
-    return GitHelper(str(tmpdir))
+def githelper(tmpdir, executor):
+    return GitHelper(str(tmpdir), executor)
 
 
 @pytest.fixture(scope='session')
-def persistentgithelper(tmpdir_factory):
-    return GitHelper(str(tmpdir_factory.mktemp('githelper')))
+def persistentgithelper(tmpdir_factory, executor):
+    return GitHelper(str(tmpdir_factory.mktemp('githelper')), executor)
 
 
 try:
@@ -60,6 +64,3 @@ else:
     def check_out_branch(githelper, clone_git_repo, branch):
         githelper.checkout(clone_git_repo, branch)
         return os.path.join(clone_git_repo)
-    def checkout(self, repo_path, checkout, fake_run=False):
-        return self._exec(['checkout', checkout], repo_path=repo_path,
-                          fake_run=fake_run)

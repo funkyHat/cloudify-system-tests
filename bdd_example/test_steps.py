@@ -62,8 +62,8 @@ def check_file_exists(cfyhelper, file):
 
 
 @then(parse("The file {file} contains the text '{text}'"))
-def check_contents(file, text, executor):
-    with py.path.local(executor.workdir).as_cwd(), open(file) as f:
+def check_contents(file, text, cfyhelper):
+    with py.path.local(cfyhelper.workdir).as_cwd(), open(file) as f:
         assert text in f.read()
 
 
