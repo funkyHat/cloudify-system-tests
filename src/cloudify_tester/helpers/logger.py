@@ -90,5 +90,5 @@ class TestLogger(object):
 
 @pytest.fixture(scope='session')
 def logger(tmpdir_factory):
-    log_dir = str(tmpdir_factory.mktemp('cfyhelper'))
+    log_dir = str(tmpdir_factory.mktemp('logger'))
     return TestLogger(log_dir)
