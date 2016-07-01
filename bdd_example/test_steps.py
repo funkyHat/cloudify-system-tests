@@ -6,6 +6,7 @@ it's cached and then reused.
 """
 import os
 import urllib2
+from ast import literal_eval
 
 import py
 import pytest
@@ -124,7 +125,8 @@ def deployment_host_port(deploy_blueprint):
     outputs = manager.deployments.outputs(deployment_id)
 
     values = outputs[0]['endpoint']['Value']
-    return values['ip_address'], values['port']
+    # really not sure why the strings in the outputs are weird like this
+    return literal_eval(values["u'ip_address'"]), values["u'port'"]
 
 
 @when('I visit the nodecellar URL')
@@ -132,7 +134,7 @@ def i_visit_the_nodecellar_url(deployment_host_port):
     """I visit the nodecellar URL."""
     page = urllib2.openurl('http://{}:{}/'.format(*deployment_host_port))
 
-    assert 'nodecellar' in page.read()
+    assert 'Node Cellar' in page.read()
 
 
 @then("I see the nodecellar front page")
