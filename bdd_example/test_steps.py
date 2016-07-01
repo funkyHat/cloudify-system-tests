@@ -8,6 +8,7 @@ import os
 import urllib2
 
 import py
+import pytest
 from pytest_bdd import scenarios, given, when, then
 from pytest_bdd.parsers import parse
 
@@ -16,6 +17,11 @@ from pytest_bdd.parsers import parse
 # possible to describe features explicitly as test cases using the @scenario
 # decorator, but I didn't need to customise so this is fine.
 scenarios('features')
+
+
+@given("I run a step which fails")
+def failing_step():
+    pytest.fail("Oh no!")
 
 
 @given(parse("I have a local blueprint at {path}"))

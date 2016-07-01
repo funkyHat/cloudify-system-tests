@@ -13,3 +13,8 @@ Feature: Local blueprint
 
         Then I see the file path/ilikecake/test.yaml exists
         And The file path/ilikecake/test.yaml contains the text 'Wow!'
+
+    Scenario: Failing Scenario
+        Given I have a local blueprint at ../cloudify_tester/suites/local/simple_blueprint/blueprint.yaml
+        And I run a step which fails
+        Then I never reach this step :(
