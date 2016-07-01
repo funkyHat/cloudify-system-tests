@@ -10,7 +10,7 @@ setup(
     install_requires=[
         'pytest',
         'pytest-bdd',
-        'PyYAML==3.11',
+        'PyYAML',
         'cloudify>=3.4a5',
     ],
 )
