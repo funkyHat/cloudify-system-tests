@@ -187,8 +187,6 @@ def session_manager(config, persistentgithelper, persistentcfyhelper):
         'inputs.yaml',
         install_plugins=True)
 
-    import pdb; pdb.set_trace()
-
     yield persistentcfyhelper
 
     persistentcfyhelper.teardown()
