@@ -19,7 +19,7 @@ The main test suites and framework are in the `cloudify_tester` dir.
 
 Test framework components are pytest plugins, and can be loaded in the standard way by external test suites (see below)
 
-Tests can be be tagged and then excluded or run based on them.
+Tests can be be tagged and then excluded or run based on those tags:
 
 ```bash
 # Run all tests which aren't tagged `slow`
@@ -89,6 +89,8 @@ False
 ## External Suites
 The `external_example` dir demonstrates that the `cloudify_tester` package can be referenced externally (e.g. from test suites which live in their respective components' repos in git).
 
+This allows test suites to easily make use of any components from the main framework simply and directly as long as it is installed (note `external_example/conftest.py` referencing the config helper from the main framework).
+
 ## BDD
 The `bdd_example` dir demonstrates the `pytest-bdd` package in action (http://pytest-bdd.readthedocs.io/en/latest/)
 
@@ -114,11 +116,13 @@ platform_options:
 
 (also note that I would propose we adopt geokala's updated config parser which supports namespaces, rather than using my outdated clone as-is)
 
+An option is added to py.test by this suite. If you run `py.test --bdd_reporting bdd_example -k-slow` it will print the steps as they are run (note that this is a very rough PoC of this feature and as such is not colour coded or quite as pretty as behave's output. It could easily be improved upon (see `bdd_example/conftest.py`).
+
 While BDD allows a much more declarative style of test, which would suit a lot of cloudify's system tests, I think that some tests are clearer written as plain functions, and pytest-bdd would allow us to re-use the same plugins & fixtures across all of the tests.
 
 ---
 
-Note that if you just run `py.test` in the root of the repo it will run all of the tests, including those in the "external" suites.
+Note that if you just run `py.test` in the root of the repo it will run all of the tests, including those in the "external" suites (and possibly anything in your virtualenv).
 
 ---
 
