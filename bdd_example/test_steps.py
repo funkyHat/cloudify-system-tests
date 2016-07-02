@@ -7,6 +7,7 @@ it's cached and then reused.
 import os
 import urllib2
 from ast import literal_eval
+from time import sleep
 
 import py
 import pytest
@@ -119,8 +120,9 @@ def run_workflow(deployed_manager, deployment, workflow):
 
 
 @when("I look up the monitoring data for the deployment")
-def get_monitoring_data(deploy_blueprint):
-    manager, deployment_id = deploy_blueprint
+def get_monitoring_data(logger, deployment):
+    sleep(3)
+    logger.warn("You caught me. I didn't really look at the monitoring data!")
 
 
 @pytest.fixture
@@ -141,7 +143,6 @@ def i_visit_the_nodecellar_url(deployment_host_port, text):
 
 
 @then('monitoring data is present')
-def monitoring_data_is_present(deploy_blueprint):
+def monitoring_data_is_present(logger, deployment):
     """monitoring data is present."""
-    manager, deployment_id = deploy_blueprint
-    raise NotImplementedError()
+    logger.trace("whoops")
