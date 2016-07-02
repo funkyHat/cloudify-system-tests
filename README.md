@@ -94,6 +94,8 @@ This allows test suites to easily make use of any components from the main frame
 ## BDD
 The `bdd_example` dir demonstrates the `pytest-bdd` package in action (http://pytest-bdd.readthedocs.io/en/latest/)
 
+While BDD allows a much more declarative style of test, which would suit a lot of cloudify's system tests, I think that some tests are clearer written as plain functions, and pytest-bdd would allow us to re-use the same plugins & fixtures across all of the tests.
+
 In order to run these tests successfully you'll need to set up a suitable `test_config.yaml`, something like:
 
 ```yaml
@@ -116,9 +118,7 @@ platform_options:
 
 (also note that I would propose we adopt geokala's updated config parser which supports namespaces, rather than using my outdated clone as-is)
 
-An option is added to py.test by this suite. If you run `py.test --bdd_reporting bdd_example -k-slow` it will print the steps as they are run (note that this is a very rough PoC of this feature and as such is not colour coded or quite as pretty as behave's output. It could easily be improved upon (see `bdd_example/conftest.py`).
-
-While BDD allows a much more declarative style of test, which would suit a lot of cloudify's system tests, I think that some tests are clearer written as plain functions, and pytest-bdd would allow us to re-use the same plugins & fixtures across all of the tests.
+I have added hooks to print out cucumber/behave style test output for each step as it is run. In order to see it for all the BDD tests use `--capture=no` so pytest doesn't hide it (note that this is a very rough PoC of this feature and as such is not colour coded or quite as pretty as behave's output. It could easily be improved upon (see `bdd_example/conftest.py`).
 
 ---
 
