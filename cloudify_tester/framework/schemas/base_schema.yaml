@@ -4,6 +4,10 @@ real:
 broken:
   description: Not broken now. Change name of this key to break.
 
+log_level:
+  description: How much logging there should be
+  default: info
+
 cloudify_version:
   description: The version of cloudify that should be used
   default: master

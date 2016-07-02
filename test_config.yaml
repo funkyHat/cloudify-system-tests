@@ -1,2 +1,3 @@
 real: yes
 fake: no
+log_level: debug

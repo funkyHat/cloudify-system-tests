@@ -3,6 +3,11 @@ import os
 
 import pytest
 
+from .config import Config
+
+
+config = Config()
+
 
 class TestLogger(object):
     level_mapping = {
@@ -91,4 +96,7 @@ class TestLogger(object):
 @pytest.fixture(scope='session')
 def logger(tmpdir_factory):
     log_dir = str(tmpdir_factory.mktemp('logger'))
-    return TestLogger(log_dir)
+    logger = TestLogger(log_dir)
+    logger.console_logging_set_level(config['log_level'])
+    logger.file_logging_set_level(config['log_level'])
+    return logger
