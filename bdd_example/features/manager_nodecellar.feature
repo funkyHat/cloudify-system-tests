@@ -19,6 +19,4 @@ Feature: testing_nodecellar_on_a_manager
         Then monitoring data is present
 
     Scenario: Check the nodecellar is available
-        When I retrieve the host and port from the deployment
-        And I visit the nodecellar URL
-        Then I see the nodecellar front page
+        Then if I visit the deployment's front page I see 'Node Cellar'

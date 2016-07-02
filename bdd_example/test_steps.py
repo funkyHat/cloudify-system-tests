@@ -94,7 +94,7 @@ def upload_blueprint(
 
 
 @given(parse("I create a '{blueprint}' deployment with the ID '{id}'"))
-def deploy_blueprint(
+def deployment(
         request, config, deployed_manager, clone_git_repo,
         blueprint, id, inputs_file,
         ):
@@ -105,13 +105,17 @@ def deploy_blueprint(
         deployed_manager.deployments.delete(id)
     request.addfinalizer(remove)
 
-    return deployed_manager, id
+    # Here I'm creating a `deployment` dictionary. This will be passed to any
+    # subesequent step which asks for this fixture. Using a dictionary (or
+    # another mutable type) allows me to store side-effects for later use, in
+    # the same way that the `context` step argument does in behave. However
+    # this allows more fine-grained context for different steps, if desired.
+    return {'manager': deployed_manager, 'id': id}
 
 
 @given(parse("I run the '{workflow}' workflow"))
-def run_workflow(deploy_blueprint, workflow):
-    manager, deployment_id = deploy_blueprint
-    manager.executions.start(deployment_id, workflow)
+def run_workflow(deployed_manager, deployment, workflow):
+    deployed_manager.executions.start(deployment['id'], workflow)
 
 
 @when("I look up the monitoring data for the deployment")
@@ -119,28 +123,21 @@ def get_monitoring_data(deploy_blueprint):
     manager, deployment_id = deploy_blueprint
 
 
-@when('I retrieve the host and port from the deployment')
-def deployment_host_port(deploy_blueprint):
-    manager, deployment_id = deploy_blueprint
-    outputs = manager.deployments.outputs(deployment_id)
+@pytest.fixture
+def deployment_host_port(manager, deployment):
+    outputs = manager.deployments.outputs(deployment['id'])
 
     values = outputs[0]['endpoint']['Value']
     # really not sure why the strings in the outputs are weird like this
     return literal_eval(values["u'ip_address'"]), values["u'port'"]
 
 
-@when('I visit the nodecellar URL')
-def i_visit_the_nodecellar_url(deployment_host_port):
+@then(parse("if I visit the deployment's front page I see '{text}'"))
+def i_visit_the_nodecellar_url(deployment_host_port, text):
     """I visit the nodecellar URL."""
-    page = urllib2.openurl('http://{}:{}/'.format(*deployment_host_port))
+    page = urllib2.urlopen('http://{}:{}/'.format(*deployment_host_port))
 
-    assert 'Node Cellar' in page.read()
-
-
-@then("I see the nodecellar front page")
-def check_front_page(deploy_blueprint):
-    manager, deployment_id = deploy_blueprint
-    raise NotImplementedError()
+    assert text in page.read()
 
 
 @then('monitoring data is present')
