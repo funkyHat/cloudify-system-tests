@@ -126,8 +126,8 @@ def get_monitoring_data(logger, deployment):
 
 
 @pytest.fixture
-def deployment_host_port(manager, deployment):
-    outputs = manager.deployments.outputs(deployment['id'])
+def deployment_host_port(deployed_manager, deployment):
+    outputs = deployed_manager.deployments.outputs(deployment['id'])
 
     values = outputs[0]['endpoint']['Value']
     # really not sure why the strings in the outputs are weird like this
@@ -145,4 +145,4 @@ def i_visit_the_nodecellar_url(deployment_host_port, text):
 @then('monitoring data is present')
 def monitoring_data_is_present(logger, deployment):
     """monitoring data is present."""
-    logger.trace("whoops")
+    logger.warn("whoops")
