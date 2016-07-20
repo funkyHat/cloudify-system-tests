@@ -346,15 +346,15 @@ class TestCase(unittest.TestCase):
             self._testMethodName,
             time.strftime("%Y%m%d-%H%M"))
         self.blueprint_yaml = None
-        self._test_cleanup_context = self.env.handler.CleanupContext(
-            self._testMethodName, self.env)
+        # self._test_cleanup_context = self.env.handler.CleanupContext(
+        #     self._testMethodName, self.env)
         # register cleanup
         self.addCleanup(self._cleanup)
         self.maxDiff = 1024 * 1024 * 10
 
     def _cleanup(self):
         self.env.setup()
-        self._test_cleanup_context.cleanup()
+        # self._test_cleanup_context.cleanup()
         shutil.rmtree(self.workdir)
 
     def tearDown(self):

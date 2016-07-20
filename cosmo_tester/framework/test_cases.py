@@ -13,7 +13,6 @@
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
 
-
 from influxdb import InfluxDBClient
 from cosmo_tester.framework.testenv import TestCase
 
